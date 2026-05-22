@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>直感選択テスト</title>
+    <style>
+        body { font-family: 'Segoe UI', Meiryo, sans-serif; text-align: center; margin-top: 50px; background-color: #f9f9f9; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+        .btn { padding: 15px 30px; font-size: 18px; margin: 10px; cursor: pointer; border: none; border-radius: 5px; color: white; background-color: #007bff; transition: 0.2s; }
+        .btn:hover { background-color: #0056b3; }
+        .btn-large { font-size: 24px; padding: 20px 50px; margin: 20px; background-color: #28a745; }
+        .btn-large:hover { background-color: #218838; }
+        #timer { font-size: 24px; font-weight: bold; color: #dc3545; margin-bottom: 20px; }
+        .form-group { text-align: left; margin-bottom: 20px; }
+        select, input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 画面1：開始画面 -->
+    <div id="step1">
+        <h2>直感テスト</h2>
+        <p>次の画面で、目の前に分かれ道が現れます。<br><strong>3秒以内</strong>に、直感でどちらに進むか選択してください。</p>
+        <button class="btn" onclick="startTest()">テストを開始する</button>
+    </div>
+
+    <!-- 画面2：左右の選択（時間制限あり） -->
+    <div id="step2" class="hidden">
+        <div id="timer">残り時間: 3.0秒</div>
+        <h2>目の前に分かれ道があります。<br>左右どちらに進みますか？</h2>
+        <button class="btn btn-large" onclick="selectDirection('左')">左</button>
+        <button class="btn btn-large" onclick="selectDirection('右')">右</button>
+    </div>
+
+    <!-- 画面3：アンケート（戻れない） -->
+    <div id="step3" class="hidden">
+        <h2>追加アンケート</h2>
+        <form id="surveyForm">
+            <div class="form-group">
+                <label>1. あなたの利き手はどちらですか？</label>
+                <select id="dominantHand" required>
+                    <option value="">選択してください</option>
+                    <option value="右">右</option>
+                    <option value="左">左</option>
+                    <option value="両利き">両利き</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>2. 漫画『HUNTER×HUNTER』を読んだことがありますか？</label>
+                <select id="readHxH" required onchange="toggleKurapikaQuestion()">
+                    <option value="">選択してください</option>
+                    <option value="はい">はい</option>
+                    <option value="いいえ">いいえ</option>
+                </select>
+            </div>
+
+            <div class="form-group hidden" id="kurapikaWrapper">
+                <label>3. ハンター試験編でクラピカが語った「人は迷った時、無意識に左を選ぶ」という法則を知っていましたか？</label>
+                <select id="knowsKurapika">
+                    <option value="">選択してください</option>
+                    <option value="知っていた">知っていた</option>
+                    <option value="知らなかった">知らなかった</option>
+                </select>
+            </div>
+
+            <button type="button" class="btn" onclick="submitData()">回答を送信</button>
+        </form>
+    </div>
+
+    <!-- 画面4：完了画面 -->
+    <div id="step4" class="hidden">
+        <h2>ご協力ありがとうございました！</h2>
+        <p>回答が記録されました。</p>
+    </div>
+</div>
+
+<script>
+    let timeLeft = 3.0;
+    let timerInterval;
+    let userResult = {
+        direction: "",
+        timeout: false
+    };
+
+    function startTest() {
+        document.getElementById('step1').classList.add('hidden');
+        document.getElementById('step2').classList.remove('hidden');
+        
+        // 0.1秒刻みのタイマー
+        timerInterval = setInterval(() => {
+            timeLeft -= 0.1;
+            document.getElementById('timer').innerText = `残り時間: ${Math.max(0, timeLeft).toFixed(1)}秒`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                userResult.direction = "未選択";
+                userResult.timeout = true;
+                alert("時間切れです！次の質問にお進みください。");
+                moveToSurvey();
+            }
+        }, 100);
+    }
+
+    function selectDirection(dir) {
+        clearInterval(timerInterval);
+        userResult.direction = dir;
+        moveToSurvey();
+    }
+
+    function moveToSurvey() {
+        document.getElementById('step2').classList.add('hidden');
+        document.getElementById('step3').classList.remove('hidden');
+    }
+
+    function toggleKurapikaQuestion() {
+        const hxh = document.getElementById('readHxH').value;
+        const wrapper = document.getElementById('kurapikaWrapper');
+        if (hxh === "はい") {
+            wrapper.classList.remove('hidden');
+            document.getElementById('knowsKurapika').required = true;
+        } else {
+            wrapper.classList.add('hidden');
+            document.getElementById('knowsKurapika').required = false;
+            document.getElementById('knowsKurapika').value = "";
+        }
+    }
+
+function submitData() {
+        // 入力チェック
+        const hand = document.getElementById('dominantHand').value;
+        const hxh = document.getElementById('readHxH').value;
+        const kurapika = document.getElementById('knowsKurapika').value;
+
+        if (!hand || !hxh || (hxh === "はい" && !kurapika)) {
+            alert("すべての質問に回答してください。");
+            return;
+        }
+
+        // 収集したデータをまとめる
+        const finalData = {
+            direction: userResult.direction,
+            timeout: userResult.timeout,
+            hand: hand,
+            hxh: hxh,
+            kurapika: kurapika
+        };
+
+        // ボタンを無効化して「送信中...」に変更
+        const submitBtn = document.querySelector('#surveyForm button');
+        submitBtn.disabled = true;
+        submitBtn.innerText = "送信中...";
+
+        // ★ここに、ステップ3でコピーした「ウェブアプリのURL」を貼り付けます★
+        const gasURL = "https://script.google.com/macros/s/AKfycbxfyymcfHCGsVTBM6XUqVNO-eWTn7UtrEaAi2jirqk3vS-GcwTWE1gRX51ACuIoGk4C/exec";
+
+        // GASへデータを送信
+        fetch(gasURL, {
+            method: "POST",
+            // text/plainにすることでブラウザのエラーを回避します
+            headers: { "Content-Type": "text/plain" },
+            body: JSON.stringify(finalData)
+        })
+        .then(response => {
+            // 送信成功したら完了画面へ
+            document.getElementById('step3').classList.add('hidden');
+            document.getElementById('step4').classList.remove('hidden');
+        })
+        .catch(error => {
+            alert("送信に失敗しました。通信環境を確認してください。");
+            submitBtn.disabled = false;
+            submitBtn.innerText = "回答を送信";
+            console.error(error);
+        });
+    }
+</script>
+
+</body>
+</html>
