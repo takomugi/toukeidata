@@ -10,12 +10,18 @@
         .hidden { display: none; }
         .btn { padding: 15px 30px; font-size: 18px; margin: 10px; cursor: pointer; border: none; border-radius: 5px; color: white; background-color: #007bff; transition: 0.2s; }
         .btn:hover { background-color: #0056b3; }
-        .btn-large { font-size: 24px; padding: 20px 50px; margin: 10px; background-color: #28a745; width: 120px; }
+        
+        /* ボタンサイズのパーセント化と折り返し禁止（極小スマホ対策） */
+        .button-container { display: flex; justify-content: center; gap: 10px; flex-wrap: nowrap; }
+        .btn-large { font-size: 24px; padding: 20px 0; margin: 10px 0; background-color: #28a745; width: 45%; box-sizing: border-box; }
         .btn-large:hover { background-color: #218838; }
+        
         #timer { font-size: 24px; font-weight: bold; color: #dc3545; margin-bottom: 20px; }
         .form-group { text-align: left; margin-bottom: 20px; }
         select, input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .button-container { display: flex; justify-content: center; gap: 20px; }
+        
+        /* 倫理規定用のスモールテキスト */
+        .consent-text { font-size: 12px; color: #666; margin-top: 20px; text-align: left; line-height: 1.4; border-top: 1px solid #ddd; padding-top: 10px; }
     </style>
 </head>
 <body>
@@ -26,6 +32,10 @@
         <h2>直感テスト</h2>
         <p>あなたは<strong>見知らぬ場所で道に迷っています</strong>。<br>次の画面で、目の前に分かれ道が現れます。<br><strong>3秒以内</strong>に、直感でどちらに進むか選択してください。</p>
         <button class="btn" onclick="startTest()">テストを開始する</button>
+        <!-- 【追加】研究倫理の同意文 -->
+        <div class="consent-text">
+            ※本調査は卒業論文の研究目的で実施しており、データは完全匿名で処理されます。テストの開始をもって同意とみなします。
+        </div>
     </div>
 
     <!-- 画面2：左右の選択 -->
@@ -61,11 +71,9 @@
                 </select>
             </div>
 
-            <!-- 初期状態では隠しておき、Q2回答後に表示する -->
             <div class="form-group hidden" id="kurapikaWrapper">
                 <label>3. あなたはクラピカ理論を知っていましたか？<br>
                 クラピカ理論とは、ハンター試験編でクラピカが語った「人は迷った時、無意識に左を選ぶ習性がある」という法則のことです。</label>
-                <!-- 選択肢はJavaScriptで動的に生成 -->
                 <select id="knowsKurapika" required>
                 </select>
             </div>
@@ -82,7 +90,6 @@
 
             <div class="form-group">
                 <label>5. あなたの学年（または現在の身分）を教えてください</label>
-                <!-- GASのコードに合わせて変数名（ID）は age のままにしています -->
                 <select id="age" required>
                     <option value="">選択してください</option>
                     <option value="1">大学1年生</option>
@@ -102,13 +109,13 @@
     <!-- 画面4：完了画面 -->
     <div id="step4" class="hidden">
         <h2>ご協力ありがとうございました！</h2>
-        <p>回答が記録されました。</p>
+        <p>回答が記録されました。ブラウザを閉じて終了してください。</p>
     </div>
 </div>
 
 <script>
-   window.onload = function() {
-        // すでに完了している、または「開始したのに完了していない（途中でリロードした）」場合はブロック
+    window.onload = function() {
+        // 【追加】完了済み、またはリロードによる「やり直し」をブロック
         if (localStorage.getItem('hxh_survey_completed') || localStorage.getItem('hxh_survey_started')) {
             document.getElementById('step1').innerHTML = "<h2>アクセス済みです</h2><p>このテストは1回しか受けることができません。ご協力ありがとうございました！</p>";
         }
@@ -122,7 +129,7 @@
     };
 
     function startTest() {
-        // 【追加】テスト開始時に「開始フラグ」を立てる（リロード対策）
+        // 【追加】テスト開始フラグを立てる（リロード対策）
         localStorage.setItem('hxh_survey_started', 'true');
 
         document.getElementById('step1').classList.add('hidden');
@@ -153,7 +160,6 @@
         document.getElementById('step3').classList.remove('hidden');
     }
 
-    // 読了・未読によって質問3の選択肢テキストを切り替える処理
     function updateKurapikaOptions() {
         const hxh = document.getElementById('readHxH').value;
         const wrapper = document.getElementById('kurapikaWrapper');
@@ -197,6 +203,7 @@
             return;
         }
 
+        // 【追加】スマホかPCかを自動判定（スマホ・タブレット=1, PC=0）
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 1 : 0;
 
         const finalData = {
@@ -206,15 +213,15 @@
             hxh: hxh,
             kurapika: kurapika,
             gender: gender,
-            age: age
+            age: age,
+            device: isMobile // 自動取得したデバイス情報を追加
         };
 
         const submitBtn = document.querySelector('#surveyForm button');
         submitBtn.disabled = true;
         submitBtn.innerText = "送信中...";
 
-        // 最新のGASのURLに更新済みです
-        const gasURL = "https://script.google.com/macros/s/AKfycbwOGttQNY1W2gUyt-w5g9h8G3j-gl0KYDhgpuM4lJjEwsJ01mbWQlpQIk8_32PqbrnY/exec";
+        const gasURL = "https://script.google.com/macros/s/AKfycbzDNPPeJQDnKyjZBGpxtKWEZIrnQMt69u0MhQOZhqZeb0Zpg72NSvxbhReunADYHPOe/exec";
 
         fetch(gasURL, {
             method: "POST",
@@ -222,6 +229,8 @@
             body: JSON.stringify(finalData)
         })
         .then(response => {
+            // 送信完了したら開始フラグを消して、完了フラグをつける
+            localStorage.removeItem('hxh_survey_started');
             localStorage.setItem('hxh_survey_completed', 'true');
             
             document.getElementById('step3').classList.add('hidden');
