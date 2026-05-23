@@ -107,9 +107,10 @@
 </div>
 
 <script>
-    window.onload = function() {
-        if (localStorage.getItem('hxh_survey_completed')) {
-            document.getElementById('step1').innerHTML = "<h2>回答済みです</h2><p>すでにご協力いただいております。ありがとうございました！</p>";
+   window.onload = function() {
+        // すでに完了している、または「開始したのに完了していない（途中でリロードした）」場合はブロック
+        if (localStorage.getItem('hxh_survey_completed') || localStorage.getItem('hxh_survey_started')) {
+            document.getElementById('step1').innerHTML = "<h2>アクセス済みです</h2><p>このテストは1回しか受けることができません。ご協力ありがとうございました！</p>";
         }
     };
 
@@ -121,6 +122,9 @@
     };
 
     function startTest() {
+        // 【追加】テスト開始時に「開始フラグ」を立てる（リロード対策）
+        localStorage.setItem('hxh_survey_started', 'true');
+
         document.getElementById('step1').classList.add('hidden');
         document.getElementById('step2').classList.remove('hidden');
         
@@ -192,6 +196,8 @@
             alert("すべての質問に回答してください。");
             return;
         }
+
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 1 : 0;
 
         const finalData = {
             direction: userResult.direction,
