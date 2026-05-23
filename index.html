@@ -24,14 +24,14 @@
     <!-- 画面1：開始画面 -->
     <div id="step1">
         <h2>直感テスト</h2>
-        <p>次の画面で、目の前に分かれ道が現れます。<br><strong>3秒以内</strong>に、直感でどちらに進むか選択してください。</p>
+        <p>あなたは<strong>見知らぬ場所で道に迷っています</strong>。<br>次の画面で、目の前に分かれ道が現れます。<br><strong>3秒以内</strong>に、直感でどちらに進むか選択してください。</p>
         <button class="btn" onclick="startTest()">テストを開始する</button>
     </div>
 
     <!-- 画面2：左右の選択 -->
     <div id="step2" class="hidden">
         <div id="timer">残り時間: 3.0秒</div>
-        <h2>目の前に分かれ道があります。<br>左右どちらに進みますか？</h2>
+        <h2>道に迷っています。目の前に分かれ道があります。<br>左右どちらに進みますか？</h2>
         <div class="button-container">
             <button class="btn btn-large" onclick="selectDirection(1)">左</button>
             <button class="btn btn-large" onclick="selectDirection(2)">右</button>
@@ -53,7 +53,7 @@
             </div>
             
             <div class="form-group">
-                <label>2. 漫画『HUNTER×HUNTER』を読んだことがありますか？</label>
+                <label>2. 漫画やアニメで『HUNTER×HUNTER』を読んだり見たりしたことがありますか？</label>
                 <select id="readHxH" required onchange="updateKurapikaOptions()">
                     <option value="">選択してください</option>
                     <option value="1">はい</option>
@@ -64,7 +64,7 @@
             <!-- 初期状態では隠しておき、Q2回答後に表示する -->
             <div class="form-group hidden" id="kurapikaWrapper">
                 <label>3. あなたはクラピカ理論を知っていましたか？<br>
-                クラピカ理論とは、ハンター試験編でクラピカが語った「人は迷った時、無意識に左を選ぶ習性があるので、逆に右を選んだ方が良い」という理論のことです。</label>
+                クラピカ理論とは、ハンター試験編でクラピカが語った「人は迷った時、無意識に左を選ぶ習性がある」という法則のことです。</label>
                 <!-- 選択肢はJavaScriptで動的に生成 -->
                 <select id="knowsKurapika" required>
                 </select>
@@ -81,14 +81,17 @@
             </div>
 
             <div class="form-group">
-                <label>5. あなたの年齢（年代）を教えてください</label>
+                <label>5. あなたの学年（または現在の身分）を教えてください</label>
+                <!-- GASのコードに合わせて変数名（ID）は age のままにしています -->
                 <select id="age" required>
                     <option value="">選択してください</option>
-                    <option value="1">10代以下</option>
-                    <option value="2">20代</option>
-                    <option value="3">30代</option>
-                    <option value="4">40代</option>
-                    <option value="5">50代以上</option>
+                    <option value="1">大学1年生</option>
+                    <option value="2">大学2年生</option>
+                    <option value="3">大学3年生</option>
+                    <option value="4">大学4年生</option>
+                    <option value="5">大学院生</option>
+                    <option value="6">短大・専門学生</option>
+                    <option value="7">社会人・その他</option>
                 </select>
             </div>
 
@@ -163,14 +166,14 @@
 
         if (hxh === "1") {
             kurapikaSelect.innerHTML += `
-                <option value="3">原作ではっきりと覚えており、普段の生活でも意識することがある</option>
-                <option value="2">確かに原作で読んだ記憶があり、内容は知っていた</option>
+                <option value="3">原作（アニメ）で見てはっきりと覚えており、普段の生活でも意識することがある</option>
+                <option value="2">確かに原作（アニメ）で見た記憶があり、内容は知っていた</option>
                 <option value="1">言われてみれば、そんなセリフがあったような気がする</option>
-                <option value="0">読んだはずだが、全く覚えていない／知らなかった</option>
+                <option value="0">見たはずだが、全く覚えていない／知らなかった</option>
             `;
         } else if (hxh === "0") {
             kurapikaSelect.innerHTML += `
-                <option value="3">ネット等でよく見ており、普段の生活でも意識することがある</option>
+                <option value="3">ネットやSNS等でよく見ており、普段の生活でも意識することがある</option>
                 <option value="2">ネットやSNS等で見たことがあり、内容は知っていた</option>
                 <option value="1">言われてみれば、どこかで聞いたことがあるような気がする</option>
                 <option value="0">全く聞いたことがない／知らなかった</option>
@@ -204,8 +207,8 @@
         submitBtn.disabled = true;
         submitBtn.innerText = "送信中...";
 
-        // ★ご自身のGASのURLをここに貼り付けてください★
-        const gasURL = "https://script.google.com/macros/s/AKfycbyWPWcDzzIJDEYDPsg-UbF5b8IKFyiMIhMy7sDcEn57S4RfEkOGtDWSi3rVOuVR585k/exec";
+        // 最新のGASのURLに更新済みです
+        const gasURL = "https://script.google.com/macros/s/AKfycbwOGttQNY1W2gUyt-w5g9h8G3j-gl0KYDhgpuM4lJjEwsJ01mbWQlpQIk8_32PqbrnY/exec";
 
         fetch(gasURL, {
             method: "POST",
