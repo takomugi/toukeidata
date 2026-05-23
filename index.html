@@ -140,7 +140,8 @@
         startTime = performance.now();
         
         timerInterval = setInterval(() => {
-            timeLeft -= 0.1;
+            const elapsed = (performance.now() - startTime) / 1000;
+            const currentTimeLeft = 3.0 - elapsed;
             document.getElementById('timer').innerText = `残り時間: ${Math.max(0, timeLeft).toFixed(1)}秒`;
             
             if (timeLeft <= 0) {
@@ -151,7 +152,7 @@
                 alert("時間切れです！次の質問にお進みください。");
                 moveToSurvey();
             }
-        }, 100);
+        }, 50);
     }
 
     function selectDirection(dir) {
